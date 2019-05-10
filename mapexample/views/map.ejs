@@ -67,6 +67,15 @@ function addMarkers(index) {
 	}
 }
 
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 mapboxgl.accessToken = 'pk.eyJ1IjoianphdHVyZW5za3kiLCJhIjoiY2owaW42cDJ1MDEwczMydGp0cXNidmtmNSJ9.r-pjoq0aLm2F8VtA3bz8Fg';
 var map = new mapboxgl.Map({
 	container: 'map', // container id
@@ -76,6 +85,32 @@ var map = new mapboxgl.Map({
 });
 
 var responses = <%- JSON.stringify(responses) %>;
+var layers = <%- JSON.stringify(layers) %>;
+
+map.on('load', function () {
+	layers.features.forEach(function(feature) {
+		map.addLayer({
+			'id': 'us-layers-'+feature.properties.NAME,
+			'type': 'fill',
+			'source': {
+				'type': 'geojson',
+				'data': feature
+			},
+			'layout': {},
+			'paint': {
+			'fill-color': getRandomColor(),
+			'fill-opacity': 0.5
+			}
+		});
+
+		map.on('click', 'us-layers-'+feature.properties.NAME, function (e) {
+			new mapboxgl.Popup()
+			.setLngLat(e.lngLat)
+			.setHTML('Welcome to '+feature.properties.NAME+'!')
+			.addTo(map);
+		});
+	});
+});
 
 var permittedValues = responses.map(function(value) {
   return value.device_type;

@@ -4,6 +4,8 @@ var router = express.Router();
 var AWS = require("aws-sdk");
 var zipcodes = require("zipcodes");
 
+var layers = require('../public/json/data.json');
+
 AWS.config.update({
   region: "us-west-2"
 });
@@ -24,6 +26,7 @@ router.get('/', function(req, res, next) {
 	    } else {
 	        console.log("Scan succeeded.");
 	        var responses = [];
+	        console.log(data.Items.length)
 	        data.Items.forEach(function(response) {
 	            //console.log(response.postal_code);
 	            if (response.postal_code != undefined) {
@@ -37,7 +40,7 @@ router.get('/', function(req, res, next) {
 	        });
 
 	        console.log(responses.length)
-	       	res.render('map', { responses: responses });
+	       	res.render('map', { responses: responses, layers: layers });
 	    }
 	});
 
