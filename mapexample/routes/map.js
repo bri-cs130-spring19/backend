@@ -36,6 +36,7 @@ router.get('/', function(req, res, next) {
 		        }
 	        });
 
+	        console.log(responses.length)
 	       	res.render('map', { responses: responses });
 	    }
 	});

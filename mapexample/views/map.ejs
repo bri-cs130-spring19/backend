@@ -9,11 +9,14 @@
 	<style>
 		body { margin:0; padding:0; }
 		#map { position:absolute; top:0; bottom:0; width:100%; }
+		#device-select { position:relative; font-size:24px; }
 	</style>
 </head>
 <body>
  
 <div id='map'></div>
+<select id="device-select" onchange="addMarkers(this.selectedIndex)"></select>
+
 <script>
 
 function getColor(rating) {
@@ -28,6 +31,41 @@ function getColor(rating) {
 	}
 }
 
+function addMarkers(index) {
+
+	markers.forEach(function(marker){
+		marker.remove();
+	});
+
+	var filteredResponses = responses.filter(function(response) {
+	  return response.device_type == permittedValues[index];
+	});
+
+	for (var i = 0; i < filteredResponses.length; i++) {
+
+		var popupOffsets = {
+		 'top': [0, 0],
+		 'top-left': [0,0],
+		 'top-right': [0,0],
+		 'bottom': [0, -markerHeight],
+		 'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+		 'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+		 'left': [markerRadius, (markerHeight - markerRadius) * -1],
+		 'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+		 };
+		var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
+		  .setHTML("<h3>Overall Satisfaction: "+filteredResponses[i].overall_satisfaction+"</h3>"+filteredResponses[i].comment)
+		  .setMaxWidth("300px")
+
+		var markerHeight = 50, markerRadius = 10, linearOffset = 25;
+		var marker = new mapboxgl.Marker({color: getColor(filteredResponses[i].overall_satisfaction)})
+		  .setLngLat([filteredResponses[i].longitude, filteredResponses[i].latitude])
+		  .addTo(map)
+		  .setPopup(popup);
+
+		markers.push(marker);
+	}
+}
 
 mapboxgl.accessToken = 'pk.eyJ1IjoianphdHVyZW5za3kiLCJhIjoiY2owaW42cDJ1MDEwczMydGp0cXNidmtmNSJ9.r-pjoq0aLm2F8VtA3bz8Fg';
 var map = new mapboxgl.Map({
@@ -39,28 +77,19 @@ var map = new mapboxgl.Map({
 
 var responses = <%- JSON.stringify(responses) %>;
 
-for (var i = 0; i < 200; i++) {
+var permittedValues = responses.map(function(value) {
+  return value.device_type;
+});
 
-	var popupOffsets = {
-	 'top': [0, 0],
-	 'top-left': [0,0],
-	 'top-right': [0,0],
-	 'bottom': [0, -markerHeight],
-	 'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
-	 'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
-	 'left': [markerRadius, (markerHeight - markerRadius) * -1],
-	 'right': [-markerRadius, (markerHeight - markerRadius) * -1]
-	 };
-	var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
-	  .setHTML("<h3>Overall Satisfaction: "+responses[i].overall_satisfaction+"</h3>"+responses[i].comment)
-	  .setMaxWidth("300px")
+permittedValues = [...new Set(permittedValues)].sort();
 
-	var markerHeight = 50, markerRadius = 10, linearOffset = 25;
-	var marker = new mapboxgl.Marker({color: getColor(responses[i].overall_satisfaction)})
-	  .setLngLat([responses[i].longitude, responses[i].latitude])
-	  .addTo(map)
-	  .setPopup(popup);
+var select = document.getElementById("device-select");
+for(index in permittedValues) {
+    select.options[select.options.length] = new Option(permittedValues[index], index);
 }
+
+var markers = [];
+addMarkers(0);
 
 </script>
  
