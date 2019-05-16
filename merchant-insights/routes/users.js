@@ -19,7 +19,7 @@ router.get('/', function(req, res, next) {
 /* POST login. */
 router.post('/login', function(req, res, next) {
     if (req.body.username === undefined || req.body.password === undefined) {
-        res.send({"error": "missing username or password"});
+        res.status(404).send({"error": "missing username or password"});
     } else {
         var params = {
 	    	TableName : "users",
@@ -31,7 +31,7 @@ router.post('/login', function(req, res, next) {
             if (err) {
                 throw(err);
             } else if (JSON.stringify(result) == "{}") {
-                res.send({"error": "user does not exist"});
+                res.status(404).send({"error": "user does not exist"});
             } else {
             	console.log(result)
                 bcrypt.compare(req.body.password, result.Item.password, function(err, match) {
@@ -48,7 +48,7 @@ router.post('/login', function(req, res, next) {
                         var token = jwt.sign(payload, key, {'header': header});
                         res.send({"token": token});
                     } else {
-                        res.send({"error": "invalid password"});
+                        res.status(400).send({"error": "invalid password"});
                     }
                 });
             }
@@ -58,9 +58,10 @@ router.post('/login', function(req, res, next) {
 
 /* POST register. */
 router.post('/register', function(req, res, next) {
-	console.log(req)
+    console.log(req)
+
     if (req.body.username === undefined || req.body.password === undefined) {
-        res.send({"error": "missing username or password"});
+        res.status(404).send({"error": "missing username or password"});
     } else {
     	var params = {
 	    	TableName : "users",
@@ -92,7 +93,7 @@ router.post('/register', function(req, res, next) {
 			        });
 				});
             } else {
-            	res.send({"error": "username already exists"});
+            	res.status(404).send({"error": "username already exists"});
             }
         });
     }
