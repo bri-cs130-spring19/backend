@@ -132,4 +132,34 @@ router.get('/ethnicity', function(req, res, next) {
 
 });
 
+/* GET DeviceType. */
+
+router.get('/device_type', function(req, res, next) {
+	connection.query("SELECT * FROM survey_responses WHERE device_type='"+req.query.device_type+"'", function (error, results, fields) {
+	    if (error) {
+	        console.error("Unable to query. Error:", JSON.stringify(error, null, 2));
+	        res.status(400).send({"error": "Unable to query. Error:"});
+	    } else {
+	        console.log("Query succeeded.");
+
+	        var totalSatisfaction = 0;
+	        var numberSatisfactions = 0;
+	        var numberMales = 0;
+	        var numberFemales = 0;
+
+	        results.forEach(function(response) {
+	        	if (response.overall_satisfaction != undefined) {
+	        		totalSatisfaction += response.overall_satisfaction;
+	        		numberSatisfactions++;
+	        	}
+	        });
+
+	       	res.send({
+	       		"averageOverallSatisfaction": (totalSatisfaction/numberSatisfactions).toFixed(2)
+	       	});
+	    }
+	});
+
+});
+
 module.exports = router;
