@@ -162,4 +162,36 @@ router.get('/device_type', function(req, res, next) {
 
 });
 
+/* GET Education. */
+//TO DO: Fix the query so that we get results for education. Currently getting no results.
+router.get('/education', function(req, res, next) {
+	console.log((decodeURI(req.query.education).replace("'","\'")));
+	connection.query("SELECT * FROM survey_responses WHERE education='"+escape(decodeURI(req.query.education).replace("'","\'"))+"'", function (error, results, fields) {
+	    if (error) {
+	        console.error("Unable to query. Error:", JSON.stringify(error, null, 2));
+	        res.status(400).send({"error": "Unable to query. Error:"});
+	    } else {
+	        console.log("Query succeeded.");
+
+	        var totalSatisfaction = 0;
+	        var numberSatisfactions = 0;
+	        var numberMales = 0;
+	        var numberFemales = 0;
+
+	        results.forEach(function(response) {
+	        	if (response.overall_satisfaction != undefined) {
+	        		totalSatisfaction += response.overall_satisfaction;
+	        		numberSatisfactions++;
+	        	}
+	        });
+
+	       	res.send({
+	       		"averageOverallSatisfaction": (totalSatisfaction/numberSatisfactions).toFixed(2)
+	       	});
+	    }
+	});
+
+});
+
+
 module.exports = router;
